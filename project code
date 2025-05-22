@@ -1,0 +1,259 @@
+# Project for Instant Message Services using Python and MySQL Connectivity
+
+import os
+import platform
+import mysql.connector
+
+#global variables
+userId=""
+password=""
+db=""
+
+#method definition
+def add_msg():
+    try:
+        global userId, password, db
+        mydb= mysql.connector.connect(host="localhost",user=userId, passwd=password,database=db)
+        mycursor=mydb.cursor()
+
+        rname=input("Enter the Name of Receiver: ")
+        sname=input("Enter the Name of Sender: ")
+        rmail=input("Enter Receiver E-mail : ")
+        smail=input("Enter the Sender E-mail : ")
+        msg=input("Enter the Message : ")
+        sql="INSERT INTO ims(rname,sname,rmail,smail,msg) VALUES (%s,%s,%s,%s,%s)"
+        val=(rname,sname,rmail,smail,msg)
+        mycursor.execute(sql,val)
+        mydb.commit()
+        print(mycursor.rowcount, "Record inserted.")
+    except Exception as e:
+        print("Add message error.",e)
+    finally:
+        mydb.close()
+
+def search_msg():
+    try:
+        global userId, password, db
+        mydb = mysql.connector.connect(host="localhost",user=userId, passwd=password,database=db)
+        mycursor=mydb.cursor()
+        print("Select the search criteria : ")
+        print("1. Message ID: ")
+        print("2. Name of Sender: ")
+        print("3. Name of Receiver: ")
+        print("4. All Details")
+        ch=int(input("Enter the choice : "))
+        if (ch==1):
+            s=input("Enter Message ID : ")
+            mycursor.execute("SELECT * FROM ims where msg_id="+s)
+            myresult = mycursor.fetchall()
+
+            if myresult==[]:
+                print("No record found")
+            else:
+                print("%-10s%-20s%-20s%-30s%-30s%-50s"%("MSG_ID","ReceiverName","SenderName","ReceiverMail","SenderMail","Message"))
+                for x in myresult:
+                    if x[0]==int(s):
+                        print("%-10s"%(str(x[0])),end="")
+                        print("%-20s"%(str(x[1])),end="")
+                        print("%-20s"%(str(x[2])),end="")
+                        print("%-30s"%(str(x[3])),end="")
+                        print("%-30s"%(str(x[4])),end="")
+                        print("%-50s"%(str(x[5])),end="")
+                        print()
+
+        elif (ch==2):
+            sn=input("Enter Sender Name : ")
+            mycursor.execute("SELECT * FROM ims where sname='"+sn+"'")
+            myresult = mycursor.fetchall()
+            if myresult==[]:
+                print("No record found")
+            else:
+                print("%-10s%-20s%-20s%-30s%-30s%-50s"%("MSG_ID","ReceiverName","SenderName","ReceiverMail","SenderMail","Message"))
+                for x in myresult:
+                    if x[2]==sn:
+                        print("%-10s"%(str(x[0])),end="")
+                        print("%-20s"%(str(x[1])),end="")
+                        print("%-20s"%(str(x[2])),end="")
+                        print("%-30s"%(str(x[3])),end="")
+                        print("%-30s"%(str(x[4])),end="")
+                        print("%-50s"%(str(x[5])),end="")
+                        print()
+
+        elif (ch==3):
+            rn=input("Enter Receiver Name : ")
+            mycursor.execute("SELECT * FROM ims where rname='"+rn+"'")
+            myresult = mycursor.fetchall()
+            if myresult==[]:
+                print("No record found")
+            else:
+                print("%-10s%-20s%-20s%-30s%-30s%-50s"%("MSG_ID","SenderName","ReceiverName","SenderMail","ReceiverMail","Message"))
+                for x in myresult:
+                    if x[1]==rn:
+                        print("%-10s"%(str(x[0])),end="")
+                        print("%-20s"%(str(x[1])),end="")
+                        print("%-20s"%(str(x[2])),end="")
+                        print("%-30s"%(str(x[3])),end="")
+                        print("%-30s"%(str(x[4])),end="")
+                        print("%-50s"%(str(x[5])),end="")
+                        print()
+
+        elif (ch==4):
+            mycursor.execute("SELECT * FROM ims")
+            myresult = mycursor.fetchall()
+            if myresult==[]:
+                print("No record found")
+            else:
+                print("%-10s%-20s%-20s%-30s%-30s%-50s"%("MSG_ID","ReceiverName","SenderName","ReceiverMail","SenderMail","Message"))
+                for x in myresult:                    
+                    print("%-10s"%(str(x[0])),end="")
+                    print("%-20s"%(str(x[1])),end="")
+                    print("%-20s"%(str(x[2])),end="")
+                    print("%-30s"%(str(x[3])),end="")
+                    print("%-30s"%(str(x[4])),end="")
+                    print("%-50s"%(str(x[5])),end="")
+                    print()
+    except Exception as e:
+        print("Search message error.", e)
+    finally:
+        mydb.close()
+
+def delete_msg():
+    try:
+        global userId, password, db
+        mydb = mysql.connector.connect(host="localhost",user=userId, passwd=password,database=db)
+        mycursor = mydb.cursor()
+        ms=input("Enter the Message ID to be deleted : ")
+        sql = "DELETE FROM ims WHERE msg_id = %s"%ms
+        mycursor.execute(sql)
+        mydb.commit()
+        print(mycursor.rowcount, "record(s) deleted")
+    except Exception as e:
+        print("Delete message error.", e)
+    finally:
+        mydb.close()
+
+def mainMenu():
+    print("\n\n***Welcome to Instant Messenger***")
+    print("Enter 1 : TO ADD NEW MESSAGE")
+    print("Enter 2 : TO SEARCH MESSAGE")
+    print("Enter 3 : TO DELETE MESSAGE")
+
+    try:
+        userInput = int(input("Please Select An Above Option: "))
+        if (userInput==1):
+            print("\n")
+            add_msg()
+        elif(userInput==2):
+            search_msg()
+        elif (userInput==3):
+            delete_msg()
+        else:
+            print("Enter correct choice. . . ")
+        ch = input("\nwant to continue Y/N: ")
+        if(ch == 'Y' or ch=='y'):
+            mainMenu()
+        else:
+            print("Invalid response. Try again.")
+
+    except():
+        print("Something Wrong in code")
+
+
+def checkTable():
+    global userId, password, db
+    print("Checking for table...")
+    try:
+        con=mysql.connector.connect(user=userId, passwd=password, database=db)
+        sql="show tables;"
+        mycursor=con.cursor()
+        mycursor.execute(sql)
+        data=mycursor.fetchall()
+        flag=0
+        for i in data:
+            if i[0].lower()=="ims":
+                flag=1;
+                break
+        if flag==0:
+            print("Table not found")
+            ch=input("Do you want to create it ? (y/n) :")
+            if ch.lower()=="y":
+                sql="CREATE TABLE ims (msg_id int(5) primary key auto_increment ,rname VARCHAR(30) not null,sname VARCHAR(30) not null, rmail VARCHAR(50) not null, smail VARCHAR(50) not null ,msg VARCHAR(250));"
+                mycursor.execute(sql)
+                con.commit()
+                print("Table successfully created.\nStarting the application...")
+                mainMenu()
+            else:
+                return
+        else:
+            print("Table already created. \nStarting the application...")
+            mainMenu()
+    except Exception as e:
+        print("Table creation error.",e)
+    finally:
+        con.close()
+
+def checkDatabase():
+    global userId, password, db
+    print("Checking for database...")
+    try:
+        con=mysql.connector.connect(user=userId, passwd=password)
+        sql="show databases;"
+        mycursor=con.cursor()
+        mycursor.execute(sql)
+        data=mycursor.fetchall()
+        flag=0
+        for i in data:
+            if i[0].lower()=="service":
+                flag=1
+                break
+        if flag == 0:
+            print("Database not found.")
+            ch=input("Do you want to create it ? (y/n) :")
+            if ch.lower() == "y":
+                sql="create database service;"
+                mycursor.execute(sql)
+                con.commit()
+                print("Database successfully created.")
+                db="service"
+                checkTable()
+            else:
+                return
+        else:
+            print("Database already created.")
+            db="service"
+            checkTable()
+    except Exception as e:
+        print("Database creation error.",e)
+    finally:
+        con.close()
+
+def login():
+    global userId, password
+    print("***Welcome to Instant Messenger***")
+    print("###Database Connection###")
+    userId = input("Enter SQL user id : ")
+    password = input("Enter SQL password : ")
+    try:
+        con=mysql.connector.connect(user=userId, passwd=password)
+        if con:
+            print("Connection Sucessful")
+            checkDatabase()
+        else:
+            print("Connection Failed")
+    except Exception as e:
+        print("Database connection error. UserID or password is incorrect", e)
+    finally:
+        con.close()
+
+#Entry point of the program
+try:
+    login()
+    while True:
+        mainMenu()
+except Exception as e:
+    print("Unhandled Error occured. ", e)
+    print("Application exiting....")
+
+
+
+
